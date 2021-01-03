@@ -1,2 +1,3 @@
 cv2>=3.4.2
 google-cloud-vision
+flask==1.1.2
