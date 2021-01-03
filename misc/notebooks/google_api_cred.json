@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "bookpyper",
+  "private_key_id": "fdd86b8f06410067e558a8853f8758eeb0d38772",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDoP7p1DtwtuWBP\n6FAJjodcgXip2Up+sxfD46QVxk5RvEFm7HFe9uACTBPBGO9sWGJAQ4q3a6E9cJT1\n6Q2rtPxUFB3tKdVgP6rjJbpAiQf8aHyJk1gxssbdA48NQM1r09Ylfavc9yRPynyV\n2/l7RFBh46yTQ4eCzyRjIdpsMwTL+pwBBd9dxKSB2+0yFXtz9s6U9pi9tgmzlJaa\n74jjkMOIT+zIesl7lEMtjVvLjNL24NhVVvrvi89q4/ODrmjcHhzCBKj46LjktO/P\nJQevXiaibe9hWXXSzKjksv1UFPFWGVlRNMw/pGXLOw/cGXfFaKTXrPFK+5VDJoU6\ngZj/FcGTAgMBAAECggEAOgW52obU4SN/+VarsEeIb8b001Iy90Zc+JaFpt79MBRd\nLo6BoF0DB+/ju4k0P5gxK6b0H/DmvofC31DTFoPHymWgOGEMKtidI9SIHJlfgmLE\nQkaqcPgeEJdUBNacu4SX6pPj/PdNfhWzXGkxgedGQb50nfHwB/EiQRXzELcKSr8e\njrB069aqKmaRiE8tCljewAdJsthTmQ7LZ4YkyG2HQamxW8x7GxrJ0zf+V7vRGaM1\nQR8WZ60Bz0Rzt8U7HuR3mhWocthTBPASRhGLz4dVADbExtpy52tEVN7KFs7AyaC2\nXfnk2aXtBdEkncf5ifbfwDXvdmp2ZK6NbKAAruQC+QKBgQD9imrCGx4ulAYpiEwY\nKO+PVqtH9B6iyEQLC/Hn0Mo2VDfp7/9Ca/m7bI8+HTYHO+iRiTGv09Z26vlTALaY\ngqJFlq5BBNyUvuApXJh5WNn99MPUT5m7TS3C3recbSRcCoBj/aP0bvtjcnQXSXmC\nlYgVQyxtQnKOSQo0llRZqAHzVwKBgQDqgHC/iVxFKTEHnfSFTshABtWhpvVZS29/\nB5ApB9tuDfmpiyrhlNHZiwWQtzOuXBq9JyuSFNqE8nVEZj8VCMue53WzMvfdNJby\n+aR+75Hk69W2mf4+PMmyYI52WDyv/qm8Ov+TisHj8JRmJcLh6M6xpgTIEtMYeIpD\nHSRUkydaJQKBgCSc8H3HXLxtM9abkCGNB8szQNjLMAFh2jGeL/jB9fGSh+CIf9wf\nq5idPLJDlaHFzPf3T+2MMdRKambKG5Q6iSRzdgZ9pTz1s3lFnd8oLZK23fCy7ghW\nRN13PByixjVkbtYBssOBo1vhE1KpkZqB7Xzkjm3YwqI5effOHbA0ytNRAoGAEo2A\n3hZ+/1XH9ENR8i4Od8pSoox0AtGOC63MgQKHIMjoRLqm9NvyUlTGZvGnnBbbYrWz\no8YUl8oa7wNr4D0m5vaHAFt68rxTaPvJQOWxVDw4V08Np1zl1EABZWmLu5zZTvQX\n/lNPDbqd8wrvxTHHEJUC8dVTcC8xOSgYFLzjsyUCgYEAg2MRfPrizBgbVKC1pZc5\nqphTPz7DwpkfHjh96+qMIh/wEwAP69W/75KUQf/Vrvnz6Wly251CjSZxGuaYovtq\nUcuomDP1zB7pFrQH9a9omNjAJHB/9JWh4ekxzUymAhEEUgXlFYddG4VLLdmPlVCv\n9uPvQkgoGe6qEr/blCL4sCQ=\n-----END PRIVATE KEY-----\n",
+  "client_email": "bookpyper@bookpyper.iam.gserviceaccount.com",
+  "client_id": "113330496125376848080",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/bookpyper%40bookpyper.iam.gserviceaccount.com"
+}
