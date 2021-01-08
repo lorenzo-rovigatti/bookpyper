@@ -41,13 +41,30 @@ window.onload = function(event) {
 	stage.add(shape_layer);
 
 	// listen for the file input change event and load the image.
-	document.querySelector("#file_input").addEventListener("change", on_input_change);
+	document.querySelector("#file_input").addEventListener("change", load_image);
+	load_image();
 
 	document.querySelector("#add").addEventListener("click", function(e) {
 		mode = mode_enum.add;
 	});
 	document.querySelector("#remove").addEventListener("click", function(e) {
 		mode = mode_enum.remove;
+	});
+	document.querySelector("#find").addEventListener("click", function(e) {
+		var URL = window.webkitURL || window.URL;
+		var url = URL.createObjectURL(document.querySelector("#file_input").files[0]);
+		var json_body = {
+			url: url
+		};
+		
+		fetch("/find", {
+			body: JSON.stringify(json_body),
+			method: "POST",
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json'
+			},
+		});
 	});
 
 	stage.on('mousedown', function(e) {
@@ -93,9 +110,9 @@ function reset_mode() {
 	mode = mode_enum.nothing;
 }
 
-function on_input_change(e) {
+function load_image() {
 	var URL = window.webkitURL || window.URL;
-	var url = URL.createObjectURL(e.target.files[0]);
+	var url = URL.createObjectURL(document.querySelector("#file_input").files[0]);
 	var img = new Image();
 	img.src = url;
 

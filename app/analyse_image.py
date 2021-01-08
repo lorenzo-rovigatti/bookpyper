@@ -10,15 +10,16 @@ import urllib
 import numpy as np
 from google.cloud import vision
 
-import detect_books_from_shelf
-import image_title_author_scrape
-import google_books_api
+from app.detect_books_from_shelf import make_crops_from_rect, get_book_lines, find_rectangles
+from app.image_title_author_scrape import detect_text
+from app.google_books_api import BooksApi
 
 
 class Rectangle(object):
+
     def __init__(self, img, coordinates):
         self.coordinates = coordinates
-        self.img = detect_books_from_shelf.make_crops_from_rect(img, coordinates)
+        self.img = make_crops_from_rect(img, coordinates)
         
     def do_ocr(self, filename=None):
         if filename is None:
@@ -29,7 +30,8 @@ class Rectangle(object):
         _, buffer = cv2.imencode(".jpg", self.img)
         output_file.write(buffer.tobytes())
 
-        self.detected_text = image_title_author_scrape.detect_text(output_file.name)
+        self.detected_text = detect_text(output_file.name)
+
 
 class BookshelfImage(object):
     '''
@@ -40,7 +42,7 @@ class BookshelfImage(object):
         '''
         Constructor
         '''
-        self.books_api = google_books_api.Api(google_api_key)
+        self.books_api = BooksApi(google_api_key)
         self.vision_client = vision.ImageAnnotatorClient.from_service_account_json('google_api_cred.json')
         
         # download the image, convert it to a NumPy array, and then read
@@ -50,10 +52,10 @@ class BookshelfImage(object):
         self.img = cv2.imdecode(image_as_array, cv2.IMREAD_COLOR)
         
     def identify_rectangles(self):
-        booklines = detect_books_from_shelf.get_book_lines(self.img, debug=False)
+        booklines = get_book_lines(self.img, debug=False)
         
         self.rectangles = []
-        for coordinates in detect_books_from_shelf.find_rectangles(booklines):
+        for coordinates in find_rectangles(booklines):
             self.rectangles.append(Rectangle(self.img, coordinates))
          
         print("%d rectangles identified" % len(self.rectangles))
