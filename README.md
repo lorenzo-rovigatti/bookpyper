@@ -5,4 +5,5 @@
 ```
 GOOGLE_API_KEY = XXX
 GOOGLE_API_JSON_FILE = XXX
+UPLOAD_FOLDER = "app/static/images/upload"
 ```

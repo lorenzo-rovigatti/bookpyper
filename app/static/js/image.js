@@ -41,8 +41,12 @@ window.onload = function(event) {
 	stage.add(shape_layer);
 
 	// listen for the file input change event and load the image.
-	document.querySelector("#file_input").addEventListener("change", load_image);
-	load_image();
+	document.querySelector("#set_image").addEventListener("submit", function(e) {
+    	e.preventDefault();
+	    upload_image();
+	});
+	
+	//document.querySelector("#file_input").addEventListener("change", load_image);
 
 	document.querySelector("#add").addEventListener("click", function(e) {
 		mode = mode_enum.add;
@@ -110,34 +114,51 @@ function reset_mode() {
 	mode = mode_enum.nothing;
 }
 
-function load_image() {
-	var URL = window.webkitURL || window.URL;
-	var url = URL.createObjectURL(document.querySelector("#file_input").files[0]);
-	var img = new Image();
-	img.src = url;
-
-	img.onload = function() {
-
-		var img_width = img.width;
-		var img_height = img.height;
-
-		// calculate dimensions to get max 1000px
-		var max = 600;
-		var ratio = (img_width > img_height ? (img_width / max) : (img_height / max))
-
-		// now load the Konva image
-		var my_img = new Konva.Image({
-			image: img,
-			x: 0,
-			y: 0,
-			width: img_width / ratio,
-			height: img_height / ratio,
-		});
-
-		image_layer.clear();
-		image_layer.add(my_img);
-		image_layer.draw();
-	}
+function upload_image() {
+	form_element = document.querySelector("#file");
+	form_data = new FormData();
+	form_data.append('file', form_element.files[0]);
+	
+	data = new URLSearchParams(form_data);
+	
+	fetch("/upload", {
+		body: form_data,
+		method: "post",
+	})
+	.then(function(response){ 
+		return response.json();
+	})
+	.then(function(data){ 
+		if(data.ok == false) {
+			alert(data.message)
+		}
+		else {
+			var img = new Image();
+			img.src = "/static/images/upload/" + data.url;
+		
+			img.onload = function() {
+				var img_width = img.width;
+				var img_height = img.height;
+		
+				// calculate dimensions to get max 1000px
+				var max = 600;
+				var ratio = (img_width > img_height ? (img_width / max) : (img_height / max))
+		
+				// now load the Konva image
+				var my_img = new Konva.Image({
+					image: img,
+					x: 0,
+					y: 0,
+					width: img_width / ratio,
+					height: img_height / ratio,
+				});
+		
+				image_layer.clear();
+				image_layer.add(my_img);
+				image_layer.draw();
+			}			
+		}
+	});
 }
 
 var initial_pos;

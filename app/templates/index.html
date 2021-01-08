@@ -4,8 +4,9 @@
 
 {% block content %}
 	<div>
-		<form>
-				<input type="file" id="file_input">
+		<form method="post" enctype="multipart/form-data" action="upload" id="set_image">
+			<input type="file" id="file" name="file">
+			<input type="submit" value="Upload">
 		</form>
 
 		<button type="button" id="add" name="add">+</button>
