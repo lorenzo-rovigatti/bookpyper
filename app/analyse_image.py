@@ -43,7 +43,7 @@ class BookshelfImage(object):
         Constructor
         '''
         self.books_api = BooksApi(google_api_key)
-        self.vision_client = vision.ImageAnnotatorClient.from_service_account_json('google_api_cred.json')
+        self.vision_client = vision.ImageAnnotatorClient.from_service_account_json(google_api_json)
         
         # download the image, convert it to a NumPy array, and then read
         # it into OpenCV format
