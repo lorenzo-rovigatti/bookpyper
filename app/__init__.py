@@ -28,10 +28,9 @@ def create_app():
     def find():
         data = request.get_json()
         bookshelf_image = analyse_image.BookshelfImage(data['url'], os.path.join(app.instance_path, app.config["GOOGLE_API_JSON_FILE"]), app.config["GOOGLE_API_KEY"])
+        bookshelf_image.identify_rectangles()
         
-        rectangles = [data, ]
-        
-        return jsonify(rectangles)
+        return jsonify(rectangles=bookshelf_image.serialised_rectangles())
     
     def allowed_file(filename):
         return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config["ALLOWED_IMAGE_EXTENSIONS"]
@@ -48,8 +47,7 @@ def create_app():
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return jsonify(ok=True, url=filename)
-            return jsonify(ok=True, url=url_for('uploaded_image', filename=filename))
+            return jsonify(ok=True, filename=filename)
         
     @app.route('/uploads/<filename>')
     def uploaded_image(filename):

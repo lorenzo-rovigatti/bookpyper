@@ -3,6 +3,8 @@ var image_layer;
 var shape_layer;
 var mode;
 var rubber_rect;
+var image_url;
+var image_ratio;
 
 const mode_enum = Object.freeze({
 	"nothing": 1,
@@ -42,10 +44,10 @@ window.onload = function(event) {
 
 	// listen for the file input change event and load the image.
 	document.querySelector("#set_image").addEventListener("submit", function(e) {
-    	e.preventDefault();
-	    upload_image();
+		e.preventDefault();
+		upload_image();
 	});
-	
+
 	//document.querySelector("#file_input").addEventListener("change", load_image);
 
 	document.querySelector("#add").addEventListener("click", function(e) {
@@ -55,12 +57,12 @@ window.onload = function(event) {
 		mode = mode_enum.remove;
 	});
 	document.querySelector("#find").addEventListener("click", function(e) {
-		var URL = window.webkitURL || window.URL;
-		var url = URL.createObjectURL(document.querySelector("#file_input").files[0]);
-		var json_body = {
-			url: url
-		};
+		show_loading();
 		
+		var json_body = {
+			url: image_url
+		};
+
 		fetch("/find", {
 			body: JSON.stringify(json_body),
 			method: "POST",
@@ -68,6 +70,22 @@ window.onload = function(event) {
 				'Accept': 'application/json',
 				'Content-Type': 'application/json'
 			},
+		})
+		.then(function(response) {
+			return response.json();
+		})
+		.then(function(data) {
+			for (rect_id in data.rectangles) {
+				rect = data.rectangles[rect_id];
+				// scale the rectangle
+				rect.x /= image_ratio;
+				rect.y /= image_ratio;
+				rect.width /= image_ratio;
+				rect.height /= image_ratio;
+				add_rectangle(rect.x, rect.y, rect.width, rect.height);
+			}
+			
+			hide_loading();
 		});
 	});
 
@@ -89,25 +107,29 @@ window.onload = function(event) {
 		if (mode == mode_enum.drawing) {
 			reset_mode();
 			rubber_rect.visible(false);
-			var new_rect = new Konva.Rect({
-				x: rubber_rect.x(),
-				y: rubber_rect.y(),
-				width: rubber_rect.width(),
-				height: rubber_rect.height(),
-				stroke: 'black',
-				strokeWidth: 2,
-			})
-			new_rect.on("click", function(e) {
-				if (mode == mode_enum.remove) {
-					reset_mode();
-					this.destroy();
-					shape_layer.draw();
-				}
-			});
-			shape_layer.add(new_rect);
-			shape_layer.draw();
+			add_rectangle(rubber_rect.x(), rubber_rect.y(), rubber_rect.width(), rubber_rect.height());
 		}
 	})
+}
+
+function add_rectangle(x, y, width, height) {
+	var new_rect = new Konva.Rect({
+		x: x,
+		y: y,
+		width: width,
+		height: height,
+		stroke: 'black',
+		strokeWidth: 2,
+	})
+	new_rect.on("click", function(e) {
+		if (mode == mode_enum.remove) {
+			reset_mode();
+			this.destroy();
+			shape_layer.draw();
+		}
+	});
+	shape_layer.add(new_rect);
+	shape_layer.draw();
 }
 
 function reset_mode() {
@@ -118,47 +140,48 @@ function upload_image() {
 	form_element = document.querySelector("#file");
 	form_data = new FormData();
 	form_data.append('file', form_element.files[0]);
-	
+
 	data = new URLSearchParams(form_data);
-	
+
 	fetch("/upload", {
 		body: form_data,
 		method: "post",
 	})
-	.then(function(response){ 
-		return response.json();
-	})
-	.then(function(data){ 
-		if(data.ok == false) {
-			alert(data.message)
-		}
-		else {
-			var img = new Image();
-			img.src = "/static/images/upload/" + data.url;
-		
-			img.onload = function() {
-				var img_width = img.width;
-				var img_height = img.height;
-		
-				// calculate dimensions to get max 1000px
-				var max = 600;
-				var ratio = (img_width > img_height ? (img_width / max) : (img_height / max))
-		
-				// now load the Konva image
-				var my_img = new Konva.Image({
-					image: img,
-					x: 0,
-					y: 0,
-					width: img_width / ratio,
-					height: img_height / ratio,
-				});
-		
-				image_layer.clear();
-				image_layer.add(my_img);
-				image_layer.draw();
-			}			
-		}
-	});
+		.then(function(response) {
+			return response.json();
+		})
+		.then(function(data) {
+			if (data.ok == false) {
+				alert(data.message)
+			}
+			else {
+				var img = new Image();
+				img.src = "/static/images/upload/" + data.filename;
+				image_url = img.src;
+
+				img.onload = function() {
+					var img_width = img.width;
+					var img_height = img.height;
+
+					// calculate dimensions to get max 1000px
+					var max = 600;
+					image_ratio = (img_width > img_height ? (img_width / max) : (img_height / max))
+
+					// now load the Konva image
+					var my_img = new Konva.Image({
+						image: img,
+						x: 0,
+						y: 0,
+						width: img_width / image_ratio,
+						height: img_height / image_ratio,
+					});
+
+					image_layer.clear();
+					image_layer.add(my_img);
+					image_layer.draw();
+				}
+			}
+		});
 }
 
 var initial_pos;
@@ -193,4 +216,28 @@ function reverse(r1, r2) {
 		r1y = r2y; r2y = r1y + d;
 	}
 	return ({ x1: r1x, y1: r1y, x2: r2x, y2: r2y }); // return the corrected rect.     
+}
+
+// selecting loading div
+const loader = document.querySelector("#loading");
+// show the loading animation
+function show_loading() {
+	document.querySelectorAll("button, input").forEach(elem => {
+		elem.disabled = true;
+	});
+	
+	loader.classList.add("display");
+	// to stop loading after some time
+	setTimeout(() => {
+		hide_loading();
+	}, 30000);
+}
+
+// hide the loading animation
+function hide_loading() {
+	loader.classList.remove("display");
+	
+	document.querySelectorAll("button, input").forEach(elem => {
+		elem.disabled = false;
+	});
 }

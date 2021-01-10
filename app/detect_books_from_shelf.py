@@ -662,10 +662,10 @@ def find_rectangles(lines):
 
     for num, line in enumerate(lines):
         if line != lines[-1]:
-            max_x = max(line.max_x, lines[num + 1].max_x)
-            min_x = min(line.min_x, lines[num + 1].min_x)
-            max_y = max(line.max_y, lines[num + 1].max_y)
-            min_y = min(line.min_y, lines[num + 1].min_y)
+            max_x = int(max(line.max_x, lines[num + 1].max_x))
+            min_x = int(min(line.min_x, lines[num + 1].min_x))
+            max_y = int(max(line.max_y, lines[num + 1].max_y))
+            min_y = int(min(line.min_y, lines[num + 1].min_y))
             rectangles.append((min_x, min_y, max_x, max_y))
     return(rectangles)
 

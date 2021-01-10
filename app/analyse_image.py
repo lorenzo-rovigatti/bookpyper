@@ -16,6 +16,9 @@ from app.google_books_api import BooksApi
 
 
 class Rectangle(object):
+    '''
+    Coordinates are x0, y0, x1, y1, where 0 is bottom left and 1 is top right
+    '''
 
     def __init__(self, img, coordinates):
         self.coordinates = coordinates
@@ -31,6 +34,17 @@ class Rectangle(object):
         output_file.write(buffer.tobytes())
 
         self.detected_text = detect_text(output_file.name)
+        
+    def serialise(self):
+        '''
+        Konva uses the coordinates of the top left vertex, width and height
+        '''
+        return {
+            'x' : self.coordinates[0],
+            'y' : self.coordinates[1],
+            'width' : self.coordinates[2] - self.coordinates[0],
+            'height' : self.coordinates[3] - self.coordinates[1]
+        }
 
 
 class BookshelfImage(object):
@@ -50,6 +64,9 @@ class BookshelfImage(object):
         resp = urllib.request.urlopen(url)
         image_as_array = np.asarray(bytearray(resp.read()), dtype="uint8")
         self.img = cv2.imdecode(image_as_array, cv2.IMREAD_COLOR)
+        
+    def serialised_rectangles(self):
+        return [rect.serialise() for rect in self.rectangles]
         
     def identify_rectangles(self):
         booklines = get_book_lines(self.img, debug=False)
