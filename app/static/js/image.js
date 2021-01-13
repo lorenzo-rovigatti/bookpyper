@@ -5,7 +5,6 @@ var mode;
 var rubber_rect;
 var image;
 var image_url;
-var image_ratio;
 var selected_rect;
 var rect_transformer;
 
@@ -14,7 +13,6 @@ const mode_enum = Object.freeze({
 	"add": 2,
 	"remove": 3,
 	"drawing": 4,
-	"select": 5,
 });
 
 window.onload = function(event) {
@@ -49,21 +47,13 @@ window.onload = function(event) {
 	stage.add(shape_layer);
 
 	// listen for the file input change event and load the image.
-	document.querySelector("#set_image").addEventListener("submit", function(e) {
-		e.preventDefault();
-		upload_image();
-	});
-
-	//document.querySelector("#file_input").addEventListener("change", load_image);
+	document.querySelector("#file").addEventListener("change", upload_image);
 
 	document.querySelector("#add").addEventListener("click", function(e) {
 		update_mode(mode_enum.add);
 	});
 	document.querySelector("#remove").addEventListener("click", function(e) {
 		update_mode(mode_enum.remove);
-	});
-	document.querySelector("#select").addEventListener("click", function(e) {
-		update_mode(mode_enum.select);
 	});
 	document.querySelector("#find").addEventListener("click", function(e) {
 		show_loading();
@@ -86,11 +76,6 @@ window.onload = function(event) {
 			.then(function(data) {
 				for (rect_id in data.rectangles) {
 					rect = data.rectangles[rect_id];
-					// scale the rectangle
-					rect.x /= image_ratio;
-					rect.y /= image_ratio;
-					rect.width /= image_ratio;
-					rect.height /= image_ratio;
 					add_rectangle(rect.x, rect.y, rect.width, rect.height);
 				}
 
@@ -142,7 +127,7 @@ window.onload = function(event) {
 			// if no key pressed and the node is not selected
 			// select just one
 			set_as_selected([e.target]);
-		} 
+		}
 		else if (meta_pressed && is_selected) {
 			// if we pressed keys and node was selected
 			// we need to remove it from selection:
@@ -150,13 +135,21 @@ window.onload = function(event) {
 			// remove node from array
 			nodes.splice(nodes.indexOf(e.target), 1);
 			set_as_selected(nodes);
-		} 
+		}
 		else if (meta_pressed && !is_selected) {
 			// add the node into selection
 			const nodes = rect_transformer.nodes().concat([e.target]);
 			set_as_selected(nodes);
 		}
 		shape_layer.draw();
+	});
+	
+	document.querySelector("#OCR").addEventListener("click", function(e) {
+		
+	});
+	
+	document.querySelector("#books").addEventListener("click", function(e) {
+		
 	});
 }
 
@@ -166,7 +159,7 @@ function set_as_selected(nodes) {
 		elem.draggable(false);
 		elem.fill(null);
 	});
-	
+
 	// and then add the new ones	
 	nodes.forEach(elem => {
 		elem.draggable(true);
@@ -184,7 +177,7 @@ function add_rectangle(x, y, width, height) {
 		stroke: 'red',
 		strokeWidth: 2,
 		strokeScaleEnabled: false,
-		name: 'rect'
+		name: 'rect',
 	})
 	new_rect.on("click", function(e) {
 		if (mode == mode_enum.remove) {
@@ -232,17 +225,17 @@ function upload_image() {
 					var img_width = img.width;
 					var img_height = img.height;
 
-					// calculate dimensions to get max 1000px
 					var max = 600;
-					image_ratio = (img_width > img_height ? (img_width / max) : (img_height / max))
+					var scale = (img_width > img_height ? (max / img_width) : (max / img_height));
+					stage.scale({x: scale, y: scale});
 
 					// now load the Konva image
 					image = new Konva.Image({
 						image: img,
 						x: 0,
 						y: 0,
-						width: img_width / image_ratio,
-						height: img_height / image_ratio,
+						width: img_width,
+						height: img_height,
 					});
 
 					image_layer.clear();
@@ -271,7 +264,6 @@ function update_drawing(pos) {
 
 	shape_layer.batchDraw();
 }
-
 
 // reverse co-ords if user drags left / up
 function reverse(r1, r2) {
