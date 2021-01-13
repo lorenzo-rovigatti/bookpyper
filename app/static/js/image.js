@@ -7,6 +7,10 @@ var image;
 var image_url;
 var selected_rect;
 var rect_transformer;
+var scale;
+
+const max_width = 1000;
+const max_height = 600;
 
 const mode_enum = Object.freeze({
 	"nothing": 1,
@@ -18,8 +22,8 @@ const mode_enum = Object.freeze({
 window.onload = function(event) {
 	reset_mode();
 
-	var width = window.innerWidth;
-	var height = window.innerHeight;
+	var width = (window.innerWidth < max_width) ? window.innerWidth : max_width;
+	var height = (window.innerHeight < max_height) ? window.innerHeight : max_height;
 
 	stage = new Konva.Stage({
 		container: 'container',
@@ -224,10 +228,15 @@ function upload_image() {
 				img.onload = function() {
 					var img_width = img.width;
 					var img_height = img.height;
+					
+					var scale_x = Math.min(1., max_width / img_width);
+					var scale_y = Math.min(1., max_height / img_height);
+					scale = Math.min(scale_x, scale_y);
 
-					var max = 600;
-					var scale = (img_width > img_height ? (max / img_width) : (max / img_height));
-					stage.scale({x: scale, y: scale});
+					stage.scale({
+						x: scale, 
+						y: scale
+					});
 
 					// now load the Konva image
 					image = new Konva.Image({
@@ -237,7 +246,7 @@ function upload_image() {
 						width: img_width,
 						height: img_height,
 					});
-
+					
 					image_layer.clear();
 					image_layer.add(image);
 					image_layer.draw();
@@ -249,12 +258,12 @@ function upload_image() {
 var initial_pos;
 var current_pos;
 function start_drawing(pos) {
-	initial_pos = { x: pos.x, y: pos.y };
-	current_pos = { x: pos.x, y: pos.y };
+	initial_pos = { x: pos.x / scale, y: pos.y / scale};
+	current_pos = { x: pos.x / scale, y: pos.y / scale };
 }
 
 function update_drawing(pos) {
-	current_pos = { x: pos.x, y: pos.y };
+	current_pos = { x: pos.x / scale, y: pos.y / scale };
 	var rect_pos = reverse(initial_pos, current_pos);
 	rubber_rect.x(rect_pos.x1);
 	rubber_rect.y(rect_pos.y1);
