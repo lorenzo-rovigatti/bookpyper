@@ -110,7 +110,6 @@ window.onload = function(event) {
 	})
 
 	stage.on('click tap', function(e) {
-
 		// remove all selections
 		if (e.target === image) {
 			set_as_selected([]);
@@ -147,13 +146,46 @@ window.onload = function(event) {
 		}
 		shape_layer.draw();
 	});
-	
+
 	document.querySelector("#OCR").addEventListener("click", function(e) {
+		show_loading();
 		
+		var serialised_rectangles = []
+		shape_layer.find(".rect").each(function(rect) {
+			var new_rect = {
+				x: rect.position().x,
+				y: rect.position().y,
+				width: rect.size().width,
+				height: rect.size().height
+			};
+			serialised_rectangles.push(new_rect)
+		});
+		
+		var json_body = {
+			url: image_url,
+			rectangles: serialised_rectangles
+		};
+		
+		fetch("/OCR", {
+			body: JSON.stringify(json_body),
+			method: "POST",
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json'
+			},
+		})
+			.then(function(response) {
+				return response.json();
+			})
+			.then(function(data) {
+				console.log(data["detected_texts"]);
+				
+				hide_loading();
+			});
 	});
-	
+
 	document.querySelector("#books").addEventListener("click", function(e) {
-		
+
 	});
 }
 
@@ -228,13 +260,13 @@ function upload_image() {
 				img.onload = function() {
 					var img_width = img.width;
 					var img_height = img.height;
-					
+
 					var scale_x = Math.min(1., max_width / img_width);
 					var scale_y = Math.min(1., max_height / img_height);
 					scale = Math.min(scale_x, scale_y);
 
 					stage.scale({
-						x: scale, 
+						x: scale,
 						y: scale
 					});
 
@@ -246,7 +278,7 @@ function upload_image() {
 						width: img_width,
 						height: img_height,
 					});
-					
+
 					image_layer.clear();
 					image_layer.add(image);
 					image_layer.draw();
@@ -258,7 +290,7 @@ function upload_image() {
 var initial_pos;
 var current_pos;
 function start_drawing(pos) {
-	initial_pos = { x: pos.x / scale, y: pos.y / scale};
+	initial_pos = { x: pos.x / scale, y: pos.y / scale };
 	current_pos = { x: pos.x / scale, y: pos.y / scale };
 }
 

@@ -20,6 +20,10 @@ def create_app():
     except OSError:
         pass
     
+    def _get_bookshelf_object(url):
+        print(os.path.join(app.instance_path, app.config["GOOGLE_API_JSON_FILE"]));
+        return analyse_image.BookshelfImage(url, os.path.join(app.instance_path, app.config["GOOGLE_API_JSON_FILE"]), app.config["GOOGLE_API_KEY"])
+    
     @app.route("/")
     def index():
         return render_template("index.html")
@@ -27,7 +31,7 @@ def create_app():
     @app.route("/find", methods=["post"])
     def find():
         data = request.get_json()
-        bookshelf_image = analyse_image.BookshelfImage(data['url'], os.path.join(app.instance_path, app.config["GOOGLE_API_JSON_FILE"]), app.config["GOOGLE_API_KEY"])
+        bookshelf_image = _get_bookshelf_object(data['url'])
         bookshelf_image.identify_rectangles()
         
         return jsonify(rectangles=bookshelf_image.serialised_rectangles())
@@ -49,9 +53,20 @@ def create_app():
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             return jsonify(ok=True, filename=filename)
         
-    @app.route('/uploads/<filename>')
+    @app.route("/uploads/<filename>")
     def uploaded_image(filename):
         print(url_for(app.config['UPLOAD_FOLDER'], filename=filename), "daje")
         return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    
+    @app.route("/OCR", methods=["post"])
+    def do_OCR():
+        data = request.get_json()
+        serialised_rectangles = data["rectangles"]
+        
+        bookshelf_image = _get_bookshelf_object(data['url'])
+        bookshelf_image.init_from_serialised_rectangles(serialised_rectangles)
+        bookshelf_image.do_OCR()
+        
+        return jsonify(detected_texts=[rect.detected_text for rect in bookshelf_image.rectangles])
     
     return app

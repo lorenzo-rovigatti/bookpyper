@@ -11,7 +11,7 @@ import numpy as np
 from google.cloud import vision
 
 from app.detect_books_from_shelf import make_crops_from_rect, get_book_lines, find_rectangles
-from app.image_title_author_scrape import detect_text
+from app.image_title_author_scrape import OCRApi
 from app.google_books_api import BooksApi
 
 
@@ -20,20 +20,8 @@ class Rectangle(object):
     Coordinates are x0, y0, x1, y1, where 0 is bottom left and 1 is top right
     '''
 
-    def __init__(self, img, coordinates):
-        self.coordinates = coordinates
-        self.img = make_crops_from_rect(img, coordinates)
-        
-    def do_ocr(self, filename=None):
-        if filename is None:
-            output_file = tempfile.NamedTemporaryFile()
-        else:
-            output_file = open(filename, "w+b")
-            
-        _, buffer = cv2.imencode(".jpg", self.img)
-        output_file.write(buffer.tobytes())
-
-        self.detected_text = detect_text(output_file.name)
+    def __init__(self, coordinates):
+        self.coordinates = [int(x) for x in coordinates]
         
     def serialise(self):
         '''
@@ -57,6 +45,7 @@ class BookshelfImage(object):
         Constructor
         '''
         self.books_api = BooksApi(google_api_key)
+        self.OCR_api = OCRApi(google_api_json)
         self.vision_client = vision.ImageAnnotatorClient.from_service_account_json(google_api_json)
         
         # download the image, convert it to a NumPy array, and then read
@@ -64,24 +53,37 @@ class BookshelfImage(object):
         resp = urllib.request.urlopen(url)
         image_as_array = np.asarray(bytearray(resp.read()), dtype="uint8")
         self.img = cv2.imdecode(image_as_array, cv2.IMREAD_COLOR)
+
+    def init_from_serialised_rectangles(self, serialised_rectangles):
+        coordinate_list = list(map(lambda r: [r['x'], r['y'], r['x'] + r['width'], r['y'] + r['height']], serialised_rectangles))
+        self.init_from_coordinate_list(coordinate_list)
+
+    def init_from_coordinate_list(self, coordinate_list):
+        self.rectangles = []
+        for coordinates in coordinate_list:
+            self.rectangles.append(Rectangle(coordinates))
         
     def serialised_rectangles(self):
         return [rect.serialise() for rect in self.rectangles]
-        
+    
     def identify_rectangles(self):
         booklines = get_book_lines(self.img, debug=False)
         
-        self.rectangles = []
-        for coordinates in find_rectangles(booklines):
-            self.rectangles.append(Rectangle(self.img, coordinates))
-         
-        print("%d rectangles identified" % len(self.rectangles))
+        self.init_from_coordinate_list(find_rectangles(booklines))
         
-    def do_ocr_on_rectangles(self):
+    def do_OCR(self):
         for rectangle in self.rectangles:
-            rectangle.do_ocr()
+            output_file = tempfile.NamedTemporaryFile()
+            
+            print(rectangle.coordinates)
+                
+            rect_img = make_crops_from_rect(self.img, rectangle.coordinates)
+            _, buffer = cv2.imencode(".jpg", rect_img)
+            output_file.write(buffer.tobytes())
+    
+            rectangle.detected_text = self.OCR_api.detect_text(output_file.name)
         
     def analyse(self):
         self.identify_rectangles()
-        self.do_ocr_on_rectangles()
+        self.do_OCR()
     
